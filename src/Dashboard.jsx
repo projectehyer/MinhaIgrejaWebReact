@@ -3,7 +3,7 @@ import { useAuth } from "./AuthContext";
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-  const { token, userEmail, logout } = useAuth();
+  const { userEmail, logout } = useAuth();
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState('inicio');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
