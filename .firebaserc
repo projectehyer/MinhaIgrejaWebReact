@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "minha-igreja-web",
+    "main": "minha-igreja-web"
+  },
+  "targets": {},
+  "etags": {}
+}
