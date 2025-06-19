@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from "./AuthContext";
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Dashboard = () => {
-  const { userEmail, logout } = useAuth();
+  const { userEmail, logout, token, refreshSession } = useAuth();
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState('inicio');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [conteudos, setConteudos] = useState([]);
+  const carrosselRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -19,6 +22,148 @@ const Dashboard = () => {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (activeMenu === 'inicio') {
+      const apiKey = process.env.REACT_APP_SUPABASE_API_KEY;
+      axios.get('https://uutmdodovftdaipqavpf.supabase.co/rest/v1/conteudo?select=titulo,texto,imagem', {
+        headers: {
+          apikey: apiKey,
+          Authorization: `Bearer ${token}`
+        },
+      })
+      .then(res => setConteudos(res.data))
+      .catch(() => setConteudos([]));
+    }
+  }, [activeMenu, token]);
+
+  // Configurar interceptor do Axios para tratar erros de autenticação
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+
+        // Se o erro for 401 e ainda não tentamos renovar o token
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+
+          try {
+            // Tenta renovar o token
+            const newToken = await refreshSession();
+            
+            // Atualiza o token na requisição original e tenta novamente
+            originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+            return axios(originalRequest);
+          } catch (refreshError) {
+            // Se falhar em renovar, faz logout e redireciona
+            logout();
+            navigate('/login');
+            return Promise.reject(refreshError);
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
+    // Limpar interceptor quando o componente for desmontado
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, [logout, navigate, refreshSession]);
+
+  // Rolagem automática do carrossel
+  useEffect(() => {
+    if (!conteudos.length) return;
+    
+    const carrossel = carrosselRef.current;
+    if (!carrossel) return;
+
+    const scrollNext = () => {
+      const cardWidth = carrossel.children[0]?.offsetWidth || 300;
+      const gap = isMobile ? 16 : 32;
+      const totalWidth = cardWidth + gap;
+      
+      if (carrossel.scrollLeft + carrossel.offsetWidth >= carrossel.scrollWidth) {
+        // Se estiver no final, volta para o início
+        carrossel.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        // Senão, avança um card
+        carrossel.scrollTo({
+          left: carrossel.scrollLeft + totalWidth,
+          behavior: 'smooth'
+        });
+      }
+    };
+
+    const interval = setInterval(scrollNext, 10000);
+    return () => clearInterval(interval);
+  }, [conteudos.length, isMobile]);
+
+  // Drag-scroll handlers
+  useEffect(() => {
+    const carrossel = carrosselRef.current;
+    if (!carrossel) return;
+
+    let isDragging = false;
+    let startX;
+    let startScrollLeft;
+
+    function startDragging(pageX) {
+      isDragging = true;
+      carrossel.style.cursor = 'grabbing';
+      startX = pageX - carrossel.offsetLeft;
+      startScrollLeft = carrossel.scrollLeft;
+    }
+
+    function stopDragging() {
+      isDragging = false;
+      carrossel.style.cursor = 'grab';
+    }
+
+    function drag(pageX) {
+      if (!isDragging) return;
+      const x = pageX - carrossel.offsetLeft;
+      const distance = (x - startX) * 1.5;
+      carrossel.scrollLeft = startScrollLeft - distance;
+    }
+
+    // Mouse Events
+    carrossel.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      startDragging(e.pageX);
+    });
+
+    carrossel.addEventListener('mousemove', (e) => {
+      e.preventDefault();
+      drag(e.pageX);
+    });
+
+    carrossel.addEventListener('mouseup', stopDragging);
+    carrossel.addEventListener('mouseleave', stopDragging);
+
+    // Touch Events
+    carrossel.addEventListener('touchstart', (e) => {
+      startDragging(e.touches[0].pageX);
+    });
+
+    carrossel.addEventListener('touchmove', (e) => {
+      drag(e.touches[0].pageX);
+    });
+
+    carrossel.addEventListener('touchend', stopDragging);
+
+    return () => {
+      carrossel.removeEventListener('mousedown', startDragging);
+      carrossel.removeEventListener('mousemove', drag);
+      carrossel.removeEventListener('mouseup', stopDragging);
+      carrossel.removeEventListener('mouseleave', stopDragging);
+      carrossel.removeEventListener('touchstart', startDragging);
+      carrossel.removeEventListener('touchmove', drag);
+      carrossel.removeEventListener('touchend', stopDragging);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -39,7 +184,130 @@ const Dashboard = () => {
   const renderContent = () => {
     switch(activeMenu) {
       case 'inicio':
-        return <div>Bem-vindo ao painel de controle da sua igreja!</div>;
+        return (
+          <div style={{ 
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            background: '#f5f6fa',
+            margin: 0,
+            padding: 0,
+            minHeight: '100vh',
+            boxSizing: 'border-box',
+          }}>
+            <div style={{
+              width: '100%',
+              maxWidth: '1200px',
+              margin: '0 auto',
+              padding: '20px',
+              boxSizing: 'border-box',
+            }}>
+              <div style={{
+                width: '100%',
+                background: 'white',
+                borderRadius: '10px',
+                padding: '20px 0',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}>
+                <div
+                  ref={carrosselRef}
+                  className="hide-scrollbar"
+                  style={{
+                    width: isMobile ? '300px' : '996px',
+                    display: 'flex',
+                    gap: isMobile ? 16 : 32,
+                    overflowX: 'auto',
+                    cursor: 'grab',
+                    scrollBehavior: 'smooth',
+                    WebkitOverflowScrolling: 'touch',
+                    scrollSnapType: 'x mandatory',
+                    margin: '0 auto',
+                    padding: 0,
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  {conteudos.map((atual, idx) => (
+                    <div 
+                      key={atual.id || idx} 
+                      style={{
+                        width: 300,
+                        height: 340,
+                        flex: '0 0 300px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                        background: '#f1f1f1',
+                        borderRadius: 16,
+                        padding: 0,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+                        overflow: 'hidden',
+                        boxSizing: 'border-box',
+                        scrollSnapAlign: 'center',
+                      }}
+                    >
+                      {atual.imagem ? (
+                        <div style={{
+                          width: '100%',
+                          height: '100%',
+                          position: 'relative',
+                          overflow: 'hidden',
+                        }}>
+                          <img 
+                            src={atual.imagem} 
+                            alt={atual.titulo || 'Conteúdo'} 
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                              borderRadius: 16,
+                            }} 
+                          />
+                        </div>
+                      ) : (
+                        <div style={{
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex', 
+                          flexDirection: 'column', 
+                          justifyContent: 'center', 
+                          alignItems: 'center',
+                          padding: '20px',
+                          boxSizing: 'border-box',
+                        }}>
+                          <h3 style={{
+                            margin: '0 0 16px 0',
+                            width: '100%',
+                            textAlign: 'center',
+                            fontSize: '1.2rem',
+                          }}>{atual.titulo || 'Sem título'}</h3>
+                          <p style={{
+                            margin: 0,
+                            width: '100%',
+                            textAlign: 'center',
+                            fontSize: '1rem',
+                            lineHeight: '1.5',
+                          }}>{atual.texto || 'Sem texto'}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <div style={{ 
+                  marginTop: '20px',
+                  textAlign: 'center',
+                  color: '#333',
+                  padding: '0 20px',
+                  boxSizing: 'border-box',
+                }}>Bem-vindo ao painel de controle da sua igreja!</div>
+              </div>
+            </div>
+          </div>
+        );
       case 'membros':
         return <div>Lista de membros da igreja</div>;
       case 'eventos':

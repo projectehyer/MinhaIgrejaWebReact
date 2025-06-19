@@ -30,7 +30,11 @@ export default function Login() {
           }
         }
       );
-      login({ token: res.data.access_token, email: res.data.user.email });
+      login({ 
+        token: res.data.access_token, 
+        refresh_token: res.data.refresh_token,
+        email: res.data.user.email 
+      });
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.msg || 'Erro ao fazer login');
