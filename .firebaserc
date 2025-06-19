@@ -1,7 +1,7 @@
 {
   "projects": {
-    "default": "minha-igreja-web",
-    "main": "minha-igreja-web"
+    "default": "minhaigrejaapp",
+    "main": "minhaigrejaapp"
   },
   "targets": {},
   "etags": {}
