@@ -1,5 +1,93 @@
 .App {
   text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  width: 100%;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  margin: 1rem 0;
+  width: 100%;
+  max-width: 100%;
+}
+
+.welcome-image {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 8px;
+}
+
+/* Estilos para dispositivos móveis */
+@media (max-width: 768px) {
+  .container {
+    padding: 0.5rem;
+  }
+
+  .card {
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 8px;
+  }
+
+  .welcome-image {
+    max-width: 100%;
+  }
+}
+
+/* Navegação */
+.nav-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: white;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+/* Conteúdo principal */
+.main-content {
+  margin-top: 60px; /* Altura do menu de navegação */
+  padding: 1rem;
+  flex: 1;
+}
+
+/* Botão de menu */
+.menu-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+/* Título da página */
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin: 1rem 0;
+  color: #333;
+}
+
+/* Subtítulo */
+.subtitle {
+  font-size: 1.1rem;
+  color: #666;
+  margin-bottom: 1.5rem;
 }
 
 .App-logo {
