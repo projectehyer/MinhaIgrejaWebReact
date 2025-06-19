@@ -32,7 +32,8 @@ const Dashboard = () => {
     { id: 'eventos', label: 'Eventos', icon: '📅' },
     { id: 'financeiro', label: 'Financeiro', icon: '💰' },
     { id: 'ministerios', label: 'Ministérios', icon: '⛪' },
-    { id: 'configuracoes', label: 'Configurações', icon: '⚙️' }
+    { id: 'configuracoes', label: 'Configurações', icon: '⚙️' },
+    { id: 'sair', label: 'Sair', icon: '🚪', isLogout: true }
   ];
 
   const renderContent = () => {
@@ -58,16 +59,21 @@ const Dashboard = () => {
     <button
       key={item.id}
       onClick={() => {
-        setActiveMenu(item.id);
-        if (isMobile) {
-          setIsMobileMenuOpen(false);
+        if (item.isLogout) {
+          handleLogout();
+        } else {
+          setActiveMenu(item.id);
+          if (isMobile) {
+            setIsMobileMenuOpen(false);
+          }
         }
       }}
       style={{
-        width: '100%',
+        width: item.isLogout ? '100%' : '100%',
+        maxWidth: item.isLogout ? '180px' : 'none',
         padding: '12px',
         margin: '5px 0',
-        backgroundColor: activeMenu === item.id ? '#34495e' : 'transparent',
+        backgroundColor: item.isLogout ? '#e74c3c' : (activeMenu === item.id ? '#34495e' : 'transparent'),
         border: 'none',
         borderRadius: '5px',
         color: 'white',
@@ -75,7 +81,9 @@ const Dashboard = () => {
         cursor: 'pointer',
         display: 'flex',
         alignItems: 'center',
-        transition: 'background-color 0.3s'
+        transition: 'background-color 0.3s',
+        fontWeight: item.isLogout ? 600 : 'normal',
+        justifyContent: 'flex-start',
       }}
     >
       <span style={{ marginRight: '10px' }}>{item.icon}</span>
@@ -135,21 +143,6 @@ const Dashboard = () => {
             <MenuButton key={item.id} item={item} />
           ))}
         </nav>
-        <button 
-          onClick={handleLogout}
-          style={{
-            padding: '12px',
-            backgroundColor: '#e74c3c',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            marginTop: '20px',
-            width: '100%'
-          }}
-        >
-          Sair
-        </button>
       </div>
     </div>
   );
