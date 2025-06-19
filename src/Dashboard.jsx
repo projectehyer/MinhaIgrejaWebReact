@@ -94,10 +94,11 @@ const Dashboard = () => {
       position: isMobile ? 'fixed' : 'relative',
       top: 0,
       left: 0,
-      height: isMobile ? '100vh' : 'auto',
+      height: isMobile ? '100vh' : '100vh',
       zIndex: 1000,
       transform: isMobile ? (isMobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none',
-      transition: 'transform 0.3s ease-in-out'
+      transition: 'transform 0.3s ease-in-out',
+      boxSizing: 'border-box',
     }}>
       <div style={{ 
         marginBottom: '30px',
@@ -128,26 +129,28 @@ const Dashboard = () => {
         )}
       </div>
 
-      <nav style={{ flex: 1 }}>
-        {menuItems.map(item => (
-          <MenuButton key={item.id} item={item} />
-        ))}
-      </nav>
-
-      <button 
-        onClick={handleLogout}
-        style={{
-          padding: '12px',
-          backgroundColor: '#e74c3c',
-          color: 'white',
-          border: 'none',
-          borderRadius: '5px',
-          cursor: 'pointer',
-          marginTop: 'auto'
-        }}
-      >
-        Sair
-      </button>
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        <nav style={{ flex: 1, overflowY: 'auto', minHeight: 0 }}>
+          {menuItems.map(item => (
+            <MenuButton key={item.id} item={item} />
+          ))}
+        </nav>
+        <button 
+          onClick={handleLogout}
+          style={{
+            padding: '12px',
+            backgroundColor: '#e74c3c',
+            color: 'white',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+            marginTop: '20px',
+            width: '100%'
+          }}
+        >
+          Sair
+        </button>
+      </div>
     </div>
   );
 
