@@ -73,7 +73,7 @@ const Dashboard = () => {
         maxWidth: item.isLogout ? '180px' : 'none',
         padding: '12px',
         margin: '5px 0',
-        backgroundColor: item.isLogout ? '#e74c3c' : (activeMenu === item.id ? '#34495e' : 'transparent'),
+        backgroundColor: activeMenu === item.id ? '#34495e' : 'transparent',
         border: 'none',
         borderRadius: '5px',
         color: 'white',
