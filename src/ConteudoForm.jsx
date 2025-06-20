@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './ConteudoForm.css';
 
 const ConteudoForm = ({ conteudo, onSave, onCancel, conteudos }) => {
   const [formData, setFormData] = useState(
     conteudo || { id: null, titulo: '', texto: '', imagem: null }
   );
+  const tituloRef = useRef(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,6 +25,11 @@ const ConteudoForm = ({ conteudo, onSave, onCancel, conteudos }) => {
       texto: item.texto || '',
       imagem: item.imagem || ''
     });
+    setTimeout(() => {
+      if (tituloRef.current) {
+        tituloRef.current.focus();
+      }
+    }, 0);
   };
 
   return (
@@ -45,6 +51,7 @@ const ConteudoForm = ({ conteudo, onSave, onCancel, conteudos }) => {
               onChange={handleChange}
               required
               placeholder="Digite o título do conteúdo"
+              ref={tituloRef}
             />
           </div>
 

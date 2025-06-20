@@ -178,7 +178,6 @@ const Dashboard = () => {
         texto: formData.texto,
         imagem: imageUrl,
       };
-      console.log(postData)
       if (formData.id) {
         // Atualização: PATCH
         await api.patch(
