@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from "./AuthContext";
 import { useNavigate } from 'react-router-dom';
 import api, { setupAxiosInterceptors } from './axios';
@@ -6,11 +6,11 @@ import './Dashboard.css'; // Importa o CSS
 import ConteudoForm from './ConteudoForm'; // Importa o novo componente
 
 // Adicione suas credenciais do Supabase aqui
-const SUPABASE_URL = 'https://uutmdodovftdaipqavpf.supabase.co';
+const SUPABASE_URL = process.env.REACT_APP_SUPABASE_API_BASE_URL;
 const SUPABASE_API_KEY = process.env.REACT_APP_SUPABASE_API_KEY;
 
 const Dashboard = () => {
-  const { userEmail, logout, token, refreshSession } = useAuth();
+  const { userEmail, logout, refreshSession, token } = useAuth();
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState('inicio');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -32,20 +32,30 @@ const Dashboard = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Função para buscar conteúdos
+  const fetchConteudos = useCallback(async () => {
+    try {
+      const res = await api.get(
+        `${SUPABASE_URL}/rest/v1/conteudo?select=id,titulo,texto,imagem`,
+        {
+          headers: {
+            apikey: SUPABASE_API_KEY,
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setConteudos(res.data);
+    } catch {
+      setConteudos([]);
+    }
+  }, [token]);
+
   // Efeito para buscar conteúdo
   useEffect(() => {
-    if (activeMenu === 'inicio') {
-      const apiKey = process.env.REACT_APP_SUPABASE_API_KEY;
-      api.get('https://uutmdodovftdaipqavpf.supabase.co/rest/v1/conteudo?select=titulo,texto,imagem', {
-        headers: {
-          apikey: apiKey,
-          Authorization: `Bearer ${token}`
-        },
-      })
-      .then(res => setConteudos(res.data))
-      .catch(() => setConteudos([]));
+    if (activeMenu === 'inicio' || activeMenu === 'conteudos') {
+      fetchConteudos();
     }
-  }, [activeMenu, token]);
+  }, [activeMenu, fetchConteudos]);
   
   // Efeito para interceptar erros de autenticação com Axios
   useEffect(() => {
@@ -163,59 +173,49 @@ const Dashboard = () => {
   const handleSaveConteudo = async (formData) => {
     try {
       let imageUrl = formData.imagem || null;
-
-      // 1. Se uma nova imagem foi selecionada, faz o upload
-      if (formData.imagem && typeof formData.imagem !== 'string') {
-        const file = formData.imagem;
-        const fileName = `${Date.now()}_${file.name}`;
-        const uploadPath = `public/${fileName}`;
-
-        // Faz o upload para o Supabase Storage usando a API REST
-        await api.post(
-          `${SUPABASE_URL}/storage/v1/object/${uploadPath}`,
-          file,
-          {
-            headers: {
-              'apikey': SUPABASE_API_KEY,
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': file.type,
-            },
-          }
-        );
-        
-        // Constrói a URL pública da imagem
-        imageUrl = `${SUPABASE_URL}/storage/v1/object/public/${uploadPath}`;
-      }
-
-      // 2. Prepara os dados para salvar na tabela 'conteudo'
       const postData = {
         titulo: formData.titulo,
         texto: formData.texto,
         imagem: imageUrl,
       };
-
-      // 3. Salva os dados na tabela
-      await api.post(
-        `${SUPABASE_URL}/rest/v1/conteudo`,
-        postData,
-        {
-          headers: {
-            'apikey': SUPABASE_API_KEY,
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal',
-          },
-        }
-      );
+      console.log(postData)
+      if (formData.id) {
+        // Atualização: PATCH
+        await api.patch(
+          `${SUPABASE_URL}/rest/v1/conteudo?id=eq.${formData.id}`,
+          postData,
+          {
+            headers: {
+              'apikey': SUPABASE_API_KEY,
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal',
+            },
+          }
+        );
+      } else {
+        // Criação: POST
+        await api.post(
+          `${SUPABASE_URL}/rest/v1/conteudo`,
+          postData,
+          {
+            headers: {
+              'apikey': SUPABASE_API_KEY,
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal',
+            },
+          }
+        );
+      }
       
       console.log('Conteúdo salvo com sucesso!');
-      // Atualiza a lista de conteúdos (implementar) e volta para o início
+      await fetchConteudos();
       setActiveMenu('inicio');
       setEditingConteudo(null);
 
     } catch (error) {
       console.error('Erro ao salvar conteúdo:', error);
-      // Adicionar feedback para o usuário (ex: toast de erro)
     }
   };
 
@@ -266,6 +266,7 @@ const Dashboard = () => {
             conteudo={editingConteudo}
             onSave={handleSaveConteudo}
             onCancel={handleCancelEdit}
+            conteudos={conteudos}
           />
         );
       case 'membros':
