@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from "./AuthContext";
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api, { setupAxiosInterceptors } from './axios';
 import './Dashboard.css'; // Importa o CSS
+import ConteudoForm from './ConteudoForm'; // Importa o novo componente
+
+// Adicione suas credenciais do Supabase aqui
+const SUPABASE_URL = 'https://uutmdodovftdaipqavpf.supabase.co';
+const SUPABASE_API_KEY = process.env.REACT_APP_SUPABASE_API_KEY;
 
 const Dashboard = () => {
   const { userEmail, logout, token, refreshSession } = useAuth();
@@ -12,6 +17,7 @@ const Dashboard = () => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [conteudos, setConteudos] = useState([]);
   const carrosselRef = useRef(null);
+  const [editingConteudo, setEditingConteudo] = useState(null);
 
   // Efeito para responsividade
   useEffect(() => {
@@ -30,7 +36,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (activeMenu === 'inicio') {
       const apiKey = process.env.REACT_APP_SUPABASE_API_KEY;
-      axios.get('https://uutmdodovftdaipqavpf.supabase.co/rest/v1/conteudo?select=titulo,texto,imagem', {
+      api.get('https://uutmdodovftdaipqavpf.supabase.co/rest/v1/conteudo?select=titulo,texto,imagem', {
         headers: {
           apikey: apiKey,
           Authorization: `Bearer ${token}`
@@ -43,29 +49,8 @@ const Dashboard = () => {
   
   // Efeito para interceptar erros de autenticação com Axios
   useEffect(() => {
-    const interceptor = axios.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const originalRequest = error.config;
-        if (error.response?.status === 401 && !originalRequest._retry) {
-          originalRequest._retry = true;
-          try {
-            const newToken = await refreshSession();
-            originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
-            return axios(originalRequest);
-          } catch (refreshError) {
-            logout();
-            navigate('/login');
-            return Promise.reject(refreshError);
-          }
-        }
-        return Promise.reject(error);
-      }
-    );
-    return () => {
-      axios.interceptors.response.eject(interceptor);
-    };
-  }, [logout, navigate, refreshSession]);
+    setupAxiosInterceptors({ refreshSession, logout, navigate });
+  }, [refreshSession, logout, navigate]);
 
   // Efeito para rolagem automática do carrossel
   useEffect(() => {
@@ -73,7 +58,11 @@ const Dashboard = () => {
     const carrossel = carrosselRef.current;
     if (!carrossel) return;
 
+    let interval = null;
+    let isPaused = false;
+
     const scrollNext = () => {
+      if (isPaused) return;
       const cards = carrossel.querySelectorAll('.conteudo-card');
       if (!cards.length) return;
 
@@ -83,32 +72,43 @@ const Dashboard = () => {
       const scrollWidth = carrossel.scrollWidth;
       const containerWidth = carrossel.offsetWidth;
 
-      // Calcula a próxima posição de scroll
-      let nextScroll = currentScroll + cardWidth + 24; // 24px é o gap entre cards
-
-      // Se chegou ao final, volta para o início
+      let nextScroll = currentScroll + cardWidth + 24;
       if (currentScroll + containerWidth >= scrollWidth - 50) {
         nextScroll = 0;
       }
-
-      // Faz o scroll suave
-      carrossel.scrollTo({
-        left: nextScroll,
-        behavior: 'smooth'
-      });
+      carrossel.scrollTo({ left: nextScroll, behavior: 'smooth' });
     };
 
-    // Inicia o intervalo de rotação
-    const interval = setInterval(scrollNext, 5000); // Reduzido para 5 segundos
+    const startInterval = () => {
+      if (interval) clearInterval(interval);
+      interval = setInterval(scrollNext, 5000);
+    };
 
-    // Pausa a rotação quando o usuário interage com o carrossel
-    const pauseRotation = () => clearInterval(interval);
-    const events = ['mousedown', 'touchstart', 'mouseover'];
-    events.forEach(event => carrossel.addEventListener(event, pauseRotation));
+    const pauseRotation = () => {
+      isPaused = true;
+    };
+    const resumeRotation = () => {
+      isPaused = false;
+    };
+
+    // Pausa ao interagir, retoma ao sair/interação terminar
+    carrossel.addEventListener('mousedown', pauseRotation);
+    carrossel.addEventListener('touchstart', pauseRotation);
+    carrossel.addEventListener('mouseover', pauseRotation);
+    carrossel.addEventListener('mouseup', resumeRotation);
+    carrossel.addEventListener('touchend', resumeRotation);
+    carrossel.addEventListener('mouseleave', resumeRotation);
+
+    startInterval();
 
     return () => {
-      clearInterval(interval);
-      events.forEach(event => carrossel.removeEventListener(event, pauseRotation));
+      if (interval) clearInterval(interval);
+      carrossel.removeEventListener('mousedown', pauseRotation);
+      carrossel.removeEventListener('touchstart', pauseRotation);
+      carrossel.removeEventListener('mouseover', pauseRotation);
+      carrossel.removeEventListener('mouseup', resumeRotation);
+      carrossel.removeEventListener('touchend', resumeRotation);
+      carrossel.removeEventListener('mouseleave', resumeRotation);
     };
   }, [conteudos.length]);
 
@@ -160,8 +160,73 @@ const Dashboard = () => {
     navigate('/login');
   };
 
+  const handleSaveConteudo = async (formData) => {
+    try {
+      let imageUrl = formData.imagem || null;
+
+      // 1. Se uma nova imagem foi selecionada, faz o upload
+      if (formData.imagem && typeof formData.imagem !== 'string') {
+        const file = formData.imagem;
+        const fileName = `${Date.now()}_${file.name}`;
+        const uploadPath = `public/${fileName}`;
+
+        // Faz o upload para o Supabase Storage usando a API REST
+        await api.post(
+          `${SUPABASE_URL}/storage/v1/object/${uploadPath}`,
+          file,
+          {
+            headers: {
+              'apikey': SUPABASE_API_KEY,
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': file.type,
+            },
+          }
+        );
+        
+        // Constrói a URL pública da imagem
+        imageUrl = `${SUPABASE_URL}/storage/v1/object/public/${uploadPath}`;
+      }
+
+      // 2. Prepara os dados para salvar na tabela 'conteudo'
+      const postData = {
+        titulo: formData.titulo,
+        texto: formData.texto,
+        imagem: imageUrl,
+      };
+
+      // 3. Salva os dados na tabela
+      await api.post(
+        `${SUPABASE_URL}/rest/v1/conteudo`,
+        postData,
+        {
+          headers: {
+            'apikey': SUPABASE_API_KEY,
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal',
+          },
+        }
+      );
+      
+      console.log('Conteúdo salvo com sucesso!');
+      // Atualiza a lista de conteúdos (implementar) e volta para o início
+      setActiveMenu('inicio');
+      setEditingConteudo(null);
+
+    } catch (error) {
+      console.error('Erro ao salvar conteúdo:', error);
+      // Adicionar feedback para o usuário (ex: toast de erro)
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setActiveMenu('inicio');
+    setEditingConteudo(null);
+  };
+
   const menuItems = [
     { id: 'inicio', label: 'Início', icon: '🏠' },
+    { id: 'conteudos', label: 'Conteúdos', icon: '📝' }, // Nova opção de menu
     { id: 'membros', label: 'Membros', icon: '👥' },
     { id: 'eventos', label: 'Eventos', icon: '📅' },
     { id: 'financeiro', label: 'Financeiro', icon: '💰' },
@@ -194,6 +259,14 @@ const Dashboard = () => {
               ) : <p>Nenhum conteúdo disponível.</p>}
             </div>
           </div>
+        );
+      case 'conteudos':
+        return (
+          <ConteudoForm 
+            conteudo={editingConteudo}
+            onSave={handleSaveConteudo}
+            onCancel={handleCancelEdit}
+          />
         );
       case 'membros':
         return <div>Lista de membros da igreja</div>;

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from './axios';
 
 const AuthContext = createContext();
 
@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
       const apiKey = process.env.REACT_APP_SUPABASE_API_KEY;
       const baseUrl = process.env.REACT_APP_SUPABASE_API_BASE_URL;
       
-      const response = await axios.post(
+      const response = await api.post(
         baseUrl.concat('/auth/v1/token?grant_type=refresh_token'),
         { refresh_token: refreshToken },
         {

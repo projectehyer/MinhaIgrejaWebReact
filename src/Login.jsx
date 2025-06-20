@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from './axios';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,7 +20,7 @@ export default function Login() {
     setError(null);
 
     try {
-      const res = await axios.post(
+      const res = await api.post(
         baseUrl.concat('/auth/v1/token?grant_type=password'),
         { email, password },
         {
