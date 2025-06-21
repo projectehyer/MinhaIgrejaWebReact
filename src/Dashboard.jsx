@@ -12,7 +12,7 @@ const SUPABASE_URL = process.env.REACT_APP_SUPABASE_API_BASE_URL;
 const SUPABASE_API_KEY = process.env.REACT_APP_SUPABASE_API_KEY;
 
 const Dashboard = () => {
-  const { userEmail, logout, refreshSession, token } = useAuth();
+  const { userEmail, logout, token } = useAuth();
   const navigate = useNavigate();
   const [activeMenu, setActiveMenu] = useState('inicio');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
