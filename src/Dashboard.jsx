@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from "./AuthContext";
 import { useNavigate } from 'react-router-dom';
-import api, { setupAxiosInterceptors } from './axios';
+import api from './axios';
 import './Dashboard.css'; // Importa o CSS
 import ConteudoForm from './ConteudoForm';
 import ConteudoDetalhe from './ConteudoDetalhe';
@@ -60,11 +60,6 @@ const Dashboard = () => {
     }
   }, [activeMenu, fetchConteudos]);
   
-  // Efeito para interceptar erros de autenticação com Axios
-  useEffect(() => {
-    setupAxiosInterceptors({ refreshSession, logout, navigate });
-  }, [refreshSession, logout, navigate]);
-
   // Efeito para rolagem automática do carrossel
   useEffect(() => {
     if (!conteudos.length) return;
@@ -236,12 +231,19 @@ const Dashboard = () => {
 
   const menuItems = [
     { id: 'inicio', label: 'Início', icon: '🏠' },
-    { id: 'conteudos', label: 'Conteúdos', icon: '📝' },
-    { id: 'membros', label: 'Membros', icon: '👥' },
-    { id: 'eventos', label: 'Eventos', icon: '📅' },
-    { id: 'financeiro', label: 'Financeiro', icon: '💰' },
-    { id: 'ministerios', label: 'Ministérios', icon: '⛪' },
-    { id: 'configuracoes', label: 'Configurações', icon: '⚙️' },
+    { 
+      id: 'administracao', 
+      label: 'Administração', 
+      icon: '⚙️',
+      submenu: [
+        { id: 'conteudos', label: 'Conteúdos', icon: '📝' },
+        { id: 'membros', label: 'Membros', icon: '👥' },
+        { id: 'eventos', label: 'Eventos', icon: '📅' },
+        { id: 'ministerios', label: 'Ministérios', icon: '⛪' },
+        { id: 'financeiro', label: 'Financeiro', icon: '💰' },
+      ]
+    },
+    { id: 'configuracoes', label: 'Configurações', icon: '🔧' },
     { id: 'sair', label: 'Sair', icon: '🚪', isLogout: true }
   ];
 
@@ -313,6 +315,13 @@ const Dashboard = () => {
         return <div>Ministérios e grupos de trabalho</div>;
       case 'configuracoes':
         return <div>Configurações do sistema</div>;
+      case 'administracao':
+        return (
+          <div className="administracao-content">
+            <h1 className="welcome-title">Administração</h1>
+            <p>Selecione uma opção do submenu para gerenciar os diferentes aspectos da igreja.</p>
+          </div>
+        );
       case 'todos':
         return (
           <div className="todos-conteudos-container" style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 1rem' }}>

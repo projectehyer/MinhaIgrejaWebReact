@@ -1,13 +1,21 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Login from './Login';
 import Dashboard from './Dashboard';
 import NotFound from './NotFound';
 import { useAuth } from './AuthContext';
 import ConteudoDetalhe from './ConteudoDetalhe';
+import { setupAxiosInterceptors } from './axios';
 
 function App() {
-  const { token } = useAuth();
+  const { token, refreshSession, logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (token) {
+      setupAxiosInterceptors({ refreshSession, logout, navigate });
+    }
+  }, [token, refreshSession, logout, navigate]);
 
   // Se o token ainda não foi carregado do localStorage
   if (token === undefined) {
