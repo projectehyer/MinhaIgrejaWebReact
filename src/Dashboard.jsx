@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import api, { setupAxiosInterceptors } from './axios';
 import './Dashboard.css'; // Importa o CSS
 import ConteudoForm from './ConteudoForm'; // Importa o novo componente
+import ConteudoDetalhe from './ConteudoDetalhe';
 
 // Adicione suas credenciais do Supabase aqui
 const SUPABASE_URL = process.env.REACT_APP_SUPABASE_API_BASE_URL;
@@ -18,6 +19,7 @@ const Dashboard = () => {
   const [conteudos, setConteudos] = useState([]);
   const carrosselRef = useRef(null);
   const [editingConteudo, setEditingConteudo] = useState(null);
+  const [idDetalhe, setIdDetalhe] = useState(null);
 
   // Efeito para responsividade
   useEffect(() => {
@@ -223,9 +225,17 @@ const Dashboard = () => {
     setEditingConteudo(null);
   };
 
+  const handleAbrirDetalhe = (conteudo) => {
+    setIdDetalhe(conteudo.id);
+  };
+
+  const handleFecharDetalhe = () => {
+    setIdDetalhe(null);
+  };
+
   const menuItems = [
     { id: 'inicio', label: 'Início', icon: '🏠' },
-    { id: 'conteudos', label: 'Conteúdos', icon: '📝' }, // Nova opção de menu
+    { id: 'conteudos', label: 'Conteúdos', icon: '📝' },
     { id: 'membros', label: 'Membros', icon: '👥' },
     { id: 'eventos', label: 'Eventos', icon: '📅' },
     { id: 'financeiro', label: 'Financeiro', icon: '💰' },
@@ -235,6 +245,9 @@ const Dashboard = () => {
   ];
 
   const renderContent = () => {
+    if (idDetalhe) {
+      return <ConteudoDetalhe id={idDetalhe} onClose={handleFecharDetalhe} embedded />;
+    }
     switch(activeMenu) {
       case 'inicio':
         return (
@@ -244,7 +257,10 @@ const Dashboard = () => {
               {conteudos.length > 0 ? (
                 <div ref={carrosselRef} className="carrossel hide-scrollbar">
                   {conteudos.map((item, index) => (
-                    <div key={index} className={`conteudo-card ${!item.imagem ? 'no-image' : ''}`}>
+                    <div key={index} className={`conteudo-card ${!item.imagem ? 'no-image' : ''}`}
+                      onClick={() => handleAbrirDetalhe(item)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       {item.imagem && (
                         <img src={item.imagem} alt={item.titulo} className="conteudo-imagem" />
                       )}
@@ -257,6 +273,24 @@ const Dashboard = () => {
                 </div>
               ) : <p>Nenhum conteúdo disponível.</p>}
             </div>
+            <button
+              style={{
+                display: 'block',
+                margin: '2rem auto 0 auto',
+                padding: '0.75rem 2rem',
+                background: '#4e73df',
+                color: 'white',
+                border: 'none',
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: '1.1rem',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(78,115,223,0.10)'
+              }}
+              onClick={() => setActiveMenu('todos')}
+            >
+              Ver todos
+            </button>
           </div>
         );
       case 'conteudos':
@@ -278,6 +312,30 @@ const Dashboard = () => {
         return <div>Ministérios e grupos de trabalho</div>;
       case 'configuracoes':
         return <div>Configurações do sistema</div>;
+      case 'todos':
+        return (
+          <div className="todos-conteudos-container" style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 1rem' }}>
+            <h1 className="welcome-title">Todos os Conteúdos</h1>
+            <div className="todos-conteudos-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24 }}>
+              {conteudos.length > 0 ? (
+                conteudos.map((item, index) => (
+                  <div key={index} className={`conteudo-card ${!item.imagem ? 'no-image' : ''}`}
+                    onClick={() => handleAbrirDetalhe(item)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    {item.imagem && (
+                      <img src={item.imagem} alt={item.titulo} className="conteudo-imagem" />
+                    )}
+                    <div className="conteudo-info">
+                      <h2 className="conteudo-titulo">{item.titulo}</h2>
+                      <p className="conteudo-texto">{item.texto}</p>
+                    </div>
+                  </div>
+                ))
+              ) : <p style={{ gridColumn: '1/-1', textAlign: 'center' }}>Nenhum conteúdo disponível.</p>}
+            </div>
+          </div>
+        );
       default:
         return <div>Selecione uma opção do menu</div>;
     }
@@ -287,6 +345,7 @@ const Dashboard = () => {
     <button 
       className={`menu-button ${activeMenu === item.id ? 'active' : ''}`}
       onClick={() => {
+        setIdDetalhe(null);
         if (item.isLogout) {
           handleLogout();
         } else {

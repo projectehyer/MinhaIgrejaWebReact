@@ -4,6 +4,7 @@ import Login from './Login';
 import Dashboard from './Dashboard';
 import NotFound from './NotFound';
 import { useAuth } from './AuthContext';
+import ConteudoDetalhe from './ConteudoDetalhe';
 
 function App() {
   const { token } = useAuth();
@@ -37,6 +38,7 @@ function App() {
         path="/dashboard" 
         element={token ? <Dashboard /> : <Navigate to="/login" />} 
       />
+      <Route path="/conteudo/:id" element={<ConteudoDetalhe />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
