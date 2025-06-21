@@ -3,8 +3,9 @@ import { useAuth } from "./AuthContext";
 import { useNavigate } from 'react-router-dom';
 import api, { setupAxiosInterceptors } from './axios';
 import './Dashboard.css'; // Importa o CSS
-import ConteudoForm from './ConteudoForm'; // Importa o novo componente
+import ConteudoForm from './ConteudoForm';
 import ConteudoDetalhe from './ConteudoDetalhe';
+import Sidebar from './Sidebar';
 
 // Adicione suas credenciais do Supabase aqui
 const SUPABASE_URL = process.env.REACT_APP_SUPABASE_API_BASE_URL;
@@ -54,7 +55,7 @@ const Dashboard = () => {
 
   // Efeito para buscar conteúdo
   useEffect(() => {
-    if (activeMenu === 'inicio' || activeMenu === 'conteudos') {
+    if (activeMenu === 'inicio' || activeMenu === 'conteudos' || activeMenu === 'todos') {
       fetchConteudos();
     }
   }, [activeMenu, fetchConteudos]);
@@ -341,47 +342,6 @@ const Dashboard = () => {
     }
   };
 
-  const MenuButton = ({ item }) => (
-    <button 
-      className={`menu-button ${activeMenu === item.id ? 'active' : ''}`}
-      onClick={() => {
-        setIdDetalhe(null);
-        if (item.isLogout) {
-          handleLogout();
-        } else {
-          setActiveMenu(item.id);
-          if (isMobile) setIsMobileMenuOpen(false);
-        }
-      }}
-    >
-      <span className="menu-icon">{item.icon}</span>
-      <span className="menu-label">{item.label}</span>
-    </button>
-  );
-
-  const Sidebar = () => (
-    <aside className={`sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
-      {isMobile && (
-        <button 
-          className="menu-close" 
-          onClick={() => setIsMobileMenuOpen(false)}
-          aria-label="Fechar Menu"
-        >
-          &times;
-        </button>
-      )}
-      <div className="logo-container">
-        <h1 className="logo">Minha Igreja</h1>
-        {userEmail && <p className="user-email">{userEmail}</p>}
-      </div>
-      <nav className="menu-nav">
-        {menuItems.map(item => (
-          <MenuButton key={item.id} item={item} />
-        ))}
-      </nav>
-    </aside>
-  );
-
   return (
     <div className="dashboard">
       {isMobile && !isMobileMenuOpen && (
@@ -393,7 +353,17 @@ const Dashboard = () => {
           ☰
         </button>
       )}
-      <Sidebar />
+      <Sidebar
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+        userEmail={userEmail}
+        menuItems={menuItems}
+        activeMenu={activeMenu}
+        setActiveMenu={setActiveMenu}
+        handleLogout={handleLogout}
+        isMobile={isMobile}
+        setIdDetalhe={setIdDetalhe}
+      />
       <main className="main-content">
         {renderContent()}
       </main>
