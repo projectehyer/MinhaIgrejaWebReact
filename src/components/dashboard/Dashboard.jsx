@@ -27,6 +27,7 @@ const Dashboard = () => {
   const [showConteudoForm, setShowConteudoForm] = useState(false);
   const [showIgrejaForm, setShowIgrejaForm] = useState(false);
   const [conteudoFilter, setConteudoFilter] = useState('');
+  const [igrejaFilter, setIgrejaFilter] = useState('');
 
   // Efeito para responsividade
   useEffect(() => {
@@ -65,10 +66,14 @@ const Dashboard = () => {
   }, [token]);
 
   // Função para buscar igrejas
-  const fetchIgrejas = useCallback(async () => {
+  const fetchIgrejas = useCallback(async (filter = '') => {
     try {
+      let url = `${SUPABASE_URL}/rest/v1/igrejas?select=id,nome,logradouro,numero,complemento,bairro,id_cidade,id_uf`;
+      if (filter) {
+        url += `&nome=ilike.*${encodeURIComponent(filter)}`;
+      }
       const res = await api.get(
-        `${SUPABASE_URL}/rest/v1/igrejas?select=id,nome,logradouro,numero,complemento,bairro,id_cidade,id_uf`,
+        url,
         {
           headers: {
             apikey: SUPABASE_API_KEY,
@@ -511,6 +516,25 @@ const Dashboard = () => {
         return (
           <div className="igreja-lista-container">
             <h1 className="welcome-title">Gerenciar Igrejas</h1>
+            <div className="filter-container">
+              <input
+                type="text"
+                placeholder="Filtrar por nome..."
+                className="filter-input"
+                value={igrejaFilter}
+                onChange={(e) => setIgrejaFilter(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') fetchIgrejas(igrejaFilter); }}
+              />
+              <button className="btn-filter" onClick={() => fetchIgrejas(igrejaFilter)}>
+                Filtrar
+              </button>
+              <button className="btn-clear-filter" onClick={() => {
+                setIgrejaFilter('');
+                fetchIgrejas('');
+              }}>
+                Limpar
+              </button>
+            </div>
             <button className="btn-add-new" onClick={handleAddNewIgreja}>
               Adicionar Nova Igreja
             </button>
