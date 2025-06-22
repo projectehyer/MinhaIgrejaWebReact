@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api from './axios';
+import api from '../../utils/axios';
 import { useNavigate } from 'react-router-dom';
 
 export default function Signup() {

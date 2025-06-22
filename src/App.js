@@ -1,16 +1,17 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import Login from './Login';
-import Signup from './Signup';
-import Dashboard from './Dashboard';
-import NotFound from './NotFound';
-import EmailConfirmation from './EmailConfirmation';
-import PasswordReset from './PasswordReset';
-import PasswordUpdate from './PasswordUpdate';
-import AuthCallback from './AuthCallback';
-import { useAuth } from './AuthContext';
-import ConteudoDetalhe from './ConteudoDetalhe';
-import { setupAxiosInterceptors } from './axios';
+import Login from './components/auth/Login';
+import Signup from './components/auth/Signup';
+import Dashboard from './components/dashboard/Dashboard';
+import NotFound from './components/ui/NotFound';
+import EmailConfirmation from './components/auth/EmailConfirmation';
+import PasswordReset from './components/auth/PasswordReset';
+import PasswordUpdate from './components/auth/PasswordUpdate';
+import AuthCallback from './components/auth/AuthCallback';
+import { useAuth } from './contexts/AuthContext';
+import ConteudoDetalhe from './components/content/ConteudoDetalhe';
+import { setupAxiosInterceptors } from './utils/axios';
+import './styles/App.css';
 
 function App() {
   const { token, refreshSession, logout } = useAuth();

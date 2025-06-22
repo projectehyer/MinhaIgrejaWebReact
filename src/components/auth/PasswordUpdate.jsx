@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import api from './axios';
+import api from '../../utils/axios';
 
 export default function PasswordUpdate() {
   const [formData, setFormData] = useState({

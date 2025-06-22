@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import api from './axios';
+import api from '../../utils/axios';
 
 const SUPABASE_URL = process.env.REACT_APP_SUPABASE_API_BASE_URL;
 const SUPABASE_API_KEY = process.env.REACT_APP_SUPABASE_API_KEY;

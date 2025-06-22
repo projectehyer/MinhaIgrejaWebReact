@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './Sidebar.css';
+import '../../styles/Sidebar.css';
 
 const MenuButton = ({ item, activeMenu, onClick, openSubmenu, setOpenSubmenu }) => {
     const hasSubmenu = item.submenu && item.submenu.length > 0;

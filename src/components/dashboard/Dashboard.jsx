@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from 'react-router-dom';
-import api from './axios';
-import './Dashboard.css'; // Importa o CSS
-import ConteudoForm from './ConteudoForm';
-import ConteudoDetalhe from './ConteudoDetalhe';
-import Sidebar from './Sidebar';
+import api from '../../utils/axios';
+import '../../styles/Dashboard.css'; // Importa o CSS
+import ConteudoForm from '../content/ConteudoForm';
+import ConteudoDetalhe from '../content/ConteudoDetalhe';
+import Sidebar from '../layout/Sidebar';
 
 // Adicione suas credenciais do Supabase aqui
 const SUPABASE_URL = process.env.REACT_APP_SUPABASE_API_BASE_URL;

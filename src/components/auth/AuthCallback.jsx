@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from './AuthContext';
-import api from './axios';
+import { useAuth } from '../../contexts/AuthContext';
+import api from '../../utils/axios';
 
 export default function AuthCallback() {
   const [status, setStatus] = useState('processing'); // 'processing', 'success', 'error'

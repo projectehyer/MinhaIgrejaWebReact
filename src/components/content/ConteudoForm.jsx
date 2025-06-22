@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import './ConteudoForm.css';
+import '../../styles/ConteudoForm.css';
 
 const ConteudoForm = ({ conteudo, onSave, onCancel, conteudos }) => {
   const [formData, setFormData] = useState(
