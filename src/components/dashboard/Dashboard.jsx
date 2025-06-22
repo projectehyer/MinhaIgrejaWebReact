@@ -24,6 +24,9 @@ const Dashboard = () => {
   const [editingConteudo, setEditingConteudo] = useState(null);
   const [editingIgreja, setEditingIgreja] = useState(null);
   const [idDetalhe, setIdDetalhe] = useState(null);
+  const [showConteudoForm, setShowConteudoForm] = useState(false);
+  const [showIgrejaForm, setShowIgrejaForm] = useState(false);
+  const [conteudoFilter, setConteudoFilter] = useState('');
 
   // Efeito para responsividade
   useEffect(() => {
@@ -39,10 +42,15 @@ const Dashboard = () => {
   }, []);
 
   // Função para buscar conteúdos
-  const fetchConteudos = useCallback(async () => {
+  const fetchConteudos = useCallback(async (filter = '') => {
     try {
+      let url = `${SUPABASE_URL}/rest/v1/conteudo?select=id,titulo,texto,imagem`;
+      if (filter) {
+        url += `&titulo=ilike.%${encodeURIComponent(filter)}%`;
+      }
+
       const res = await api.get(
-        `${SUPABASE_URL}/rest/v1/conteudo?select=id,titulo,texto,imagem`,
+        url,
         {
           headers: {
             apikey: SUPABASE_API_KEY,
@@ -245,6 +253,7 @@ const Dashboard = () => {
       await fetchConteudos();
       setActiveMenu('inicio');
       setEditingConteudo(null);
+      setShowConteudoForm(false);
 
     } catch (error) {
       console.error('Erro ao salvar conteúdo:', error);
@@ -252,8 +261,18 @@ const Dashboard = () => {
   };
 
   const handleCancelEdit = () => {
-    setActiveMenu('inicio');
     setEditingConteudo(null);
+    setShowConteudoForm(false);
+  };
+
+  const handleEditConteudo = (conteudo) => {
+    setEditingConteudo(conteudo);
+    setShowConteudoForm(true);
+  };
+
+  const handleAddNewConteudo = () => {
+    setEditingConteudo(null);
+    setShowConteudoForm(true);
   };
 
   const handleSaveIgreja = async (formData) => {
@@ -302,6 +321,7 @@ const Dashboard = () => {
       await fetchIgrejas();
       setActiveMenu('inicio');
       setEditingIgreja(null);
+      setShowIgrejaForm(false);
 
     } catch (error) {
       console.error('Erro ao salvar igreja:', error);
@@ -334,8 +354,18 @@ const Dashboard = () => {
   };
 
   const handleCancelEditIgreja = () => {
-    setActiveMenu('inicio');
     setEditingIgreja(null);
+    setShowIgrejaForm(false);
+  };
+
+  const handleAddNewIgreja = () => {
+    setEditingIgreja(null);
+    setShowIgrejaForm(true);
+  };
+
+  const handleEditIgreja = (igreja) => {
+    setEditingIgreja(igreja);
+    setShowIgrejaForm(true);
   };
 
   const handleAbrirDetalhe = (conteudo) => {
@@ -415,22 +445,93 @@ const Dashboard = () => {
           </div>
         );
       case 'conteudos':
+        if (showConteudoForm) {
+          return (
+            <ConteudoForm 
+              conteudo={editingConteudo}
+              onSave={handleSaveConteudo}
+              onCancel={handleCancelEdit}
+            />
+          );
+        }
         return (
-          <ConteudoForm 
-            conteudo={editingConteudo}
-            onSave={handleSaveConteudo}
-            onCancel={handleCancelEdit}
-            conteudos={conteudos}
-          />
+          <div className="conteudo-lista-container">
+            <h1 className="welcome-title">Gerenciar Conteúdos</h1>
+            <div className="filter-container">
+              <input
+                type="text"
+                placeholder="Filtrar por título..."
+                className="filter-input"
+                value={conteudoFilter}
+                onChange={(e) => setConteudoFilter(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') fetchConteudos(conteudoFilter); }}
+              />
+              <button className="btn-filter" onClick={() => fetchConteudos(conteudoFilter)}>
+                Filtrar
+              </button>
+              <button className="btn-clear-filter" onClick={() => {
+                setConteudoFilter('');
+                fetchConteudos('');
+              }}>
+                Limpar
+              </button>
+            </div>
+            <button className="btn-add-new" onClick={handleAddNewConteudo}>
+              Adicionar Novo Conteúdo
+            </button>
+            <div className="conteudo-lista">
+              {conteudos.length > 0 ? (
+                conteudos.map((item) => (
+                  <div key={item.id} className="conteudo-lista-item">
+                    <div className="conteudo-lista-info">
+                      <h3>{item.titulo}</h3>
+                      <p>{item.texto ? `${item.texto.substring(0, 100)}...` : '(Este conteúdo não possui texto.)'}</p>
+                    </div>
+                    <div className="conteudo-lista-actions">
+                      <button onClick={() => handleEditConteudo(item)}>Editar</button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>Nenhum conteúdo cadastrado.</p>
+              )}
+            </div>
+          </div>
         );
       case 'igrejas':
+        if (showIgrejaForm) {
+          return (
+            <IgrejaForm 
+              igreja={editingIgreja}
+              onSave={handleSaveIgreja}
+              onCancel={handleCancelEditIgreja}
+            />
+          );
+        }
         return (
-          <IgrejaForm 
-            igreja={editingIgreja}
-            onSave={handleSaveIgreja}
-            onCancel={handleCancelEditIgreja}
-            igrejas={igrejas}
-          />
+          <div className="igreja-lista-container">
+            <h1 className="welcome-title">Gerenciar Igrejas</h1>
+            <button className="btn-add-new" onClick={handleAddNewIgreja}>
+              Adicionar Nova Igreja
+            </button>
+            <div className="igreja-lista">
+              {igrejas.length > 0 ? (
+                igrejas.map((item) => (
+                  <div key={item.id} className="igreja-lista-item">
+                    <div className="igreja-lista-info">
+                      <h3>{item.nome}</h3>
+                      <p>{item.logradouro}, {item.numero} - {item.bairro}</p>
+                    </div>
+                    <div className="igreja-lista-actions">
+                      <button onClick={() => handleEditIgreja(item)}>Editar</button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>Nenhuma igreja cadastrada.</p>
+              )}
+            </div>
+          </div>
         );
       case 'membros':
         return <div>Lista de membros da igreja</div>;

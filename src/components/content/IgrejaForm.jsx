@@ -3,7 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import api from '../../utils/axios';
 import '../../styles/IgrejaForm.css';
 
-const IgrejaForm = ({ igreja, onSave, onCancel, igrejas }) => {
+const IgrejaForm = ({ igreja, onSave, onCancel }) => {
   const { token } = useAuth();
   const [formData, setFormData] = useState(
     igreja || { 
@@ -90,31 +90,6 @@ const IgrejaForm = ({ igreja, onSave, onCancel, igrejas }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave(formData);
-  };
-
-  // Permite selecionar uma igreja da lista para edição
-  const handleSelectIgreja = (item) => {
-    setFormData({
-      id: item.id || null,
-      nome: item.nome || '',
-      logradouro: item.logradouro || '',
-      numero: item.numero || '',
-      complemento: item.complemento || '',
-      bairro: item.bairro || '',
-      id_cidade: item.id_cidade || '',
-      id_uf: item.id_uf || ''
-    });
-    
-    // Se há um estado selecionado, carregar as cidades
-    if (item.id_uf) {
-      fetchCidades(item.id_uf);
-    }
-    
-    setTimeout(() => {
-      if (nomeRef.current) {
-        nomeRef.current.focus();
-      }
-    }, 0);
   };
 
   return (
@@ -248,45 +223,6 @@ const IgrejaForm = ({ igreja, onSave, onCancel, igrejas }) => {
             </button>
           </div>
         </form>
-      </div>
-      
-      {/* Lista de igrejas cadastradas */}
-      <div className="igrejas-lista" style={{ marginTop: '2rem' }}>
-        <h3 style={{ textAlign: 'center', marginBottom: '1rem' }}>Igrejas já cadastradas</h3>
-        {igrejas && igrejas.length > 0 ? (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {igrejas.map((item, idx) => (
-              <li key={idx} style={{
-                background: '#fff',
-                borderRadius: '8px',
-                boxShadow: '0 2px 8px rgba(44,62,80,0.07)',
-                marginBottom: '1rem',
-                padding: '1rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1rem',
-                cursor: 'pointer',
-                transition: 'background 0.2s',
-              }}
-              onClick={() => handleSelectIgreja(item)}
-              >
-                <div style={{ fontSize: '2rem' }}>⛪</div>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '1.1rem' }}>{item.nome}</div>
-                  <div style={{ color: '#555', fontSize: '0.95rem' }}>
-                    {item.logradouro}, {item.numero}
-                    {item.complemento && ` - ${item.complemento}`}
-                  </div>
-                  <div style={{ color: '#666', fontSize: '0.9rem' }}>
-                    {item.bairro} - {item.id_cidade}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p style={{ textAlign: 'center', color: '#888' }}>Nenhuma igreja cadastrada ainda.</p>
-        )}
       </div>
     </div>
   );
