@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import api from './axios';
-import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function Signup() {
@@ -12,7 +11,6 @@ export default function Signup() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
 
   const apiKey = process.env.REACT_APP_SUPABASE_API_KEY;

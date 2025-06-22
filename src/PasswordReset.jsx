@@ -18,7 +18,7 @@ export default function PasswordReset() {
     setError(null);
 
     try {
-      const response = await api.post(
+      await api.post(
         `${baseUrl}/auth/v1/recover`,
         {
           email: email,

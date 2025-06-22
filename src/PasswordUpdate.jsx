@@ -78,8 +78,7 @@ export default function PasswordUpdate() {
     try {
       const token = searchParams.get('token');
 
-      // Atualizar senha no Supabase
-      const response = await api.post(
+      await api.post(
         `${baseUrl}/auth/v1/user`,
         {
           password: formData.password
