@@ -46,7 +46,7 @@ const Dashboard = () => {
     try {
       let url = `${SUPABASE_URL}/rest/v1/conteudo?select=id,titulo,texto,imagem`;
       if (filter) {
-        url += `&titulo=ilike.%${encodeURIComponent(filter)}%`;
+        url += `&titulo=ilike.*${encodeURIComponent(filter)}*`;
       }
 
       const res = await api.get(
