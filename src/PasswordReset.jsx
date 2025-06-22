@@ -21,7 +21,8 @@ export default function PasswordReset() {
       const response = await api.post(
         `${baseUrl}/auth/v1/recover`,
         {
-          email: email
+          email: email,
+          redirect_to: `${window.location.origin}/update-password`
         },
         {
           headers: {

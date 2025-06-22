@@ -6,6 +6,7 @@ import Dashboard from './Dashboard';
 import NotFound from './NotFound';
 import EmailConfirmation from './EmailConfirmation';
 import PasswordReset from './PasswordReset';
+import PasswordUpdate from './PasswordUpdate';
 import AuthCallback from './AuthCallback';
 import { useAuth } from './AuthContext';
 import ConteudoDetalhe from './ConteudoDetalhe';
@@ -57,6 +58,10 @@ function App() {
       <Route 
         path="/reset-password" 
         element={<PasswordReset />} 
+      />
+      <Route 
+        path="/update-password" 
+        element={<PasswordUpdate />} 
       />
       <Route 
         path="/auth/callback" 
