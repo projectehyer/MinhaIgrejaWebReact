@@ -5,6 +5,7 @@ import api from '../../utils/axios';
 import '../../styles/Dashboard.css'; // Importa o CSS
 import ConteudoForm from '../content/ConteudoForm';
 import ConteudoDetalhe from '../content/ConteudoDetalhe';
+import IgrejaForm from '../content/IgrejaForm';
 import Sidebar from '../layout/Sidebar';
 
 // Adicione suas credenciais do Supabase aqui
@@ -18,8 +19,10 @@ const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [conteudos, setConteudos] = useState([]);
+  const [igrejas, setIgrejas] = useState([]);
   const carrosselRef = useRef(null);
   const [editingConteudo, setEditingConteudo] = useState(null);
+  const [editingIgreja, setEditingIgreja] = useState(null);
   const [idDetalhe, setIdDetalhe] = useState(null);
 
   // Efeito para responsividade
@@ -53,12 +56,44 @@ const Dashboard = () => {
     }
   }, [token]);
 
+  // Função para buscar igrejas
+  const fetchIgrejas = useCallback(async () => {
+    try {
+      const res = await api.get(
+        `${SUPABASE_URL}/rest/v1/igrejas?select=id,nome,logradouro,numero,complemento,bairro,id_cidade,id_uf`,
+        {
+          headers: {
+            apikey: SUPABASE_API_KEY,
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setIgrejas(res.data);
+    } catch (error) {
+      console.error('Erro ao buscar igrejas:', error);
+      
+      if (error.response?.status === 401) {
+        console.log('Sessão expirada ao buscar igrejas');
+        // Não fazer logout aqui, apenas limpar a lista
+        setIgrejas([]);
+      } else if (error.response?.status === 404) {
+        console.log('Tabela de igrejas não encontrada');
+        setIgrejas([]);
+      } else {
+        setIgrejas([]);
+      }
+    }
+  }, [token]);
+
   // Efeito para buscar conteúdo
   useEffect(() => {
     if (activeMenu === 'inicio' || activeMenu === 'conteudos' || activeMenu === 'todos') {
       fetchConteudos();
     }
-  }, [activeMenu, fetchConteudos]);
+    if (activeMenu === 'igrejas') {
+      fetchIgrejas();
+    }
+  }, [activeMenu, fetchConteudos, fetchIgrejas]);
   
   // Efeito para rolagem automática do carrossel
   useEffect(() => {
@@ -221,6 +256,88 @@ const Dashboard = () => {
     setEditingConteudo(null);
   };
 
+  const handleSaveIgreja = async (formData) => {
+    try {
+      const postData = {
+        nome: formData.nome,
+        logradouro: formData.logradouro,
+        numero: formData.numero,
+        complemento: formData.complemento || null,
+        bairro: formData.bairro,
+        id_cidade: formData.id_cidade,
+        id_uf: formData.id_uf,
+      };
+      
+      if (formData.id) {
+        // Atualização: PATCH
+        await api.patch(
+          `${SUPABASE_URL}/rest/v1/igrejas?id=eq.${formData.id}`,
+          postData,
+          {
+            headers: {
+              'apikey': SUPABASE_API_KEY,
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal',
+            },
+          }
+        );
+      } else {
+        // Criação: POST
+        await api.post(
+          `${SUPABASE_URL}/rest/v1/igrejas`,
+          postData,
+          {
+            headers: {
+              'apikey': SUPABASE_API_KEY,
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal',
+            },
+          }
+        );
+      }
+      
+      console.log('Igreja salva com sucesso!');
+      await fetchIgrejas();
+      setActiveMenu('inicio');
+      setEditingIgreja(null);
+
+    } catch (error) {
+      console.error('Erro ao salvar igreja:', error);
+      
+      let errorMessage = 'Erro ao salvar igreja';
+      
+      if (error.code === 'NETWORK_ERROR' || error.message.includes('ERR_INTERNET_DISCONNECTED')) {
+        errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
+      } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        errorMessage = 'Tempo limite excedido. Verifique sua conexão e tente novamente.';
+      } else if (error.response?.status === 401) {
+        errorMessage = 'Sessão expirada. Faça login novamente.';
+        // Redirecionar para login
+        logout();
+        navigate('/login');
+        return;
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Acesso negado. Verifique suas permissões.';
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Tabela de igrejas não encontrada. Verifique a configuração do Supabase.';
+      } else if (error.response?.status === 422) {
+        errorMessage = 'Dados inválidos. Verifique os campos obrigatórios.';
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Erro interno do servidor. Tente novamente mais tarde.';
+      }
+      
+      // Mostrar erro para o usuário (você pode implementar um toast ou alert)
+      alert(errorMessage);
+    }
+  };
+
+  const handleCancelEditIgreja = () => {
+    setActiveMenu('inicio');
+    setEditingIgreja(null);
+  };
+
   const handleAbrirDetalhe = (conteudo) => {
     setIdDetalhe(conteudo.id);
   };
@@ -237,6 +354,7 @@ const Dashboard = () => {
       icon: '⚙️',
       submenu: [
         { id: 'conteudos', label: 'Conteúdos', icon: '📝' },
+        { id: 'igrejas', label: 'Igrejas', icon: '⛪' },
         { id: 'membros', label: 'Membros', icon: '👥' },
         { id: 'eventos', label: 'Eventos', icon: '📅' },
         { id: 'ministerios', label: 'Ministérios', icon: '⛪' },
@@ -303,6 +421,15 @@ const Dashboard = () => {
             onSave={handleSaveConteudo}
             onCancel={handleCancelEdit}
             conteudos={conteudos}
+          />
+        );
+      case 'igrejas':
+        return (
+          <IgrejaForm 
+            igreja={editingIgreja}
+            onSave={handleSaveIgreja}
+            onCancel={handleCancelEditIgreja}
+            igrejas={igrejas}
           />
         );
       case 'membros':

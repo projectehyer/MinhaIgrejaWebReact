@@ -1,0 +1,148 @@
+/* Estilos para o formulário de igrejas */
+.igreja-form-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(44,62,80,0.10);
+}
+
+.igreja-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.igreja-form h2 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  font-size: 1.8rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select {
+  padding: 0.75rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #4e73df;
+  box-shadow: 0 0 0 3px rgba(78,115,223,0.1);
+}
+
+.form-group input:disabled,
+.form-group select:disabled {
+  background-color: #f7fafc;
+  color: #a0aec0;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.form-group input::placeholder {
+  color: #a0aec0;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.btn {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 140px;
+}
+
+.btn-primary {
+  background: #4e73df;
+  color: white;
+  box-shadow: 0 2px 8px rgba(78,115,223,0.10);
+}
+
+.btn-primary:hover {
+  background: #3a5fcd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(78,115,223,0.20);
+}
+
+.btn-secondary {
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+.btn-secondary:hover {
+  background: #cbd5e0;
+  transform: translateY(-1px);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .igreja-form-container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
+/* Estilos para a lista de igrejas */
+.igrejas-lista {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.igrejas-lista h3 {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.igrejas-lista ul li:hover {
+  background: #f8fafc !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(44,62,80,0.12) !important;
+} 

@@ -110,7 +110,7 @@
   border: none;
   border-radius: 6px;
   color: rgba(255, 255, 255, 0.8);
-  font-size: 0.9rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s;
   width: 100%;
@@ -128,7 +128,7 @@
 }
 
 .submenu-icon {
-  font-size: 1rem;
+  font-size: 1.1rem;
   width: 20px;
   text-align: center;
 }
