@@ -72,10 +72,10 @@ const IgrejaForm = ({ igreja, onSave, onCancel, igrejas }) => {
       const SUPABASE_URL = process.env.REACT_APP_SUPABASE_API_BASE_URL;
       const SUPABASE_API_KEY = process.env.REACT_APP_SUPABASE_API_KEY;
       
-      const res = await api.get(`${SUPABASE_URL}/rest/v1/cidades?id_uf=eq.${idUf}&select=*`, {
+      const res = await api.get(`${SUPABASE_URL}/rest/v1/municipios?id_estado=eq.${idUf}&select=*`, {
         headers: {
           apikey: SUPABASE_API_KEY,
-          Authorization: `Bearer ${SUPABASE_API_KEY}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       setCidades(res.data);
@@ -209,7 +209,7 @@ const IgrejaForm = ({ igreja, onSave, onCancel, igrejas }) => {
                 </option>
                 {estados.map(estado => (
                   <option key={estado.id} value={estado.id}>
-                    {estado.nome} ({estado.uf})
+                    {estado.nome} ({estado.sigla})
                   </option>
                 ))}
               </select>
