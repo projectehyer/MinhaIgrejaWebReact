@@ -471,15 +471,17 @@ const Dashboard = () => {
                 onChange={(e) => setConteudoFilter(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') fetchConteudos(conteudoFilter); }}
               />
-              <button className="btn-filter" onClick={() => fetchConteudos(conteudoFilter)}>
-                Filtrar
-              </button>
-              <button className="btn-clear-filter" onClick={() => {
-                setConteudoFilter('');
-                fetchConteudos('');
-              }}>
-                Limpar
-              </button>
+              <div className="filter-buttons">
+                <button className="btn-filter" onClick={() => fetchConteudos(conteudoFilter)}>
+                  Filtrar
+                </button>
+                <button className="btn-clear-filter" onClick={() => {
+                  setConteudoFilter('');
+                  fetchConteudos('');
+                }}>
+                  Limpar
+                </button>
+              </div>
             </div>
             <button className="btn-add-new" onClick={handleAddNewConteudo}>
               Adicionar Novo Conteúdo
@@ -525,15 +527,17 @@ const Dashboard = () => {
                 onChange={(e) => setIgrejaFilter(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') fetchIgrejas(igrejaFilter); }}
               />
-              <button className="btn-filter" onClick={() => fetchIgrejas(igrejaFilter)}>
-                Filtrar
-              </button>
-              <button className="btn-clear-filter" onClick={() => {
-                setIgrejaFilter('');
-                fetchIgrejas('');
-              }}>
-                Limpar
-              </button>
+              <div className="filter-buttons">
+                <button className="btn-filter" onClick={() => fetchIgrejas(igrejaFilter)}>
+                  Filtrar
+                </button>
+                <button className="btn-clear-filter" onClick={() => {
+                  setIgrejaFilter('');
+                  fetchIgrejas('');
+                }}>
+                  Limpar
+                </button>
+              </div>
             </div>
             <button className="btn-add-new" onClick={handleAddNewIgreja}>
               Adicionar Nova Igreja
