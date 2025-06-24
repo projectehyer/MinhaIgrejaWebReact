@@ -60,7 +60,7 @@ const ConteudoForm = ({ conteudo, onSave, onCancel, conteudos }) => {
             <textarea
               id="texto"
               name="texto"
-              value={formData.texto}
+              value={formData.texto || ""}
               onChange={handleChange}
               rows="5"
               placeholder="Digite o texto principal"

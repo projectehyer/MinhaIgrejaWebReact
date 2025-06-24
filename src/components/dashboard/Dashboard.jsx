@@ -256,7 +256,7 @@ const Dashboard = () => {
       
       console.log('Conteúdo salvo com sucesso!');
       await fetchConteudos();
-      setActiveMenu('inicio');
+      setActiveMenu('conteudos');
       setEditingConteudo(null);
       setShowConteudoForm(false);
 
@@ -324,7 +324,7 @@ const Dashboard = () => {
       
       console.log('Igreja salva com sucesso!');
       await fetchIgrejas();
-      setActiveMenu('inicio');
+      setActiveMenu('igrejas');
       setEditingIgreja(null);
       setShowIgrejaForm(false);
 
