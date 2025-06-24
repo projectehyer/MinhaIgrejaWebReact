@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../utils/axios';
 import '../../styles/IgrejaForm.css';
@@ -23,17 +23,35 @@ const IgrejaForm = ({ igreja, onSave, onCancel }) => {
   const [loadingEstados, setLoadingEstados] = useState(true);
   const nomeRef = useRef(null);
 
-  // Função para buscar estados
-  const fetchEstados = async () => {
+  const fetchCidades = useCallback(async (idUf) => {
+    setLoadingCidades(true);
+    try {
+      const SUPABASE_URL = process.env.REACT_APP_SUPABASE_API_BASE_URL;
+      const SUPABASE_API_KEY = process.env.REACT_APP_SUPABASE_API_KEY;
+      const res = await api.get(`${SUPABASE_URL}/rest/v1/municipios?id_estado=eq.${idUf}&select=*`, {
+        headers: {
+          apikey: SUPABASE_API_KEY,
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setCidades(res.data);
+    } catch (error) {
+      console.error('Erro ao buscar cidades:', error);
+      setCidades([]);
+    } finally {
+      setLoadingCidades(false);
+    }
+  }, [token]);
+
+  const fetchEstados = useCallback(async () => {
     setLoadingEstados(true);
     try {
       const SUPABASE_URL = process.env.REACT_APP_SUPABASE_API_BASE_URL;
       const SUPABASE_API_KEY = process.env.REACT_APP_SUPABASE_API_KEY;
-      
       const res = await api.get(`${SUPABASE_URL}/rest/v1/estados?select=*`, {
         headers: {
           apikey: SUPABASE_API_KEY,
-          Authorization: `Bearer ${SUPABASE_API_KEY}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       setEstados(res.data);
@@ -43,12 +61,19 @@ const IgrejaForm = ({ igreja, onSave, onCancel }) => {
     } finally {
       setLoadingEstados(false);
     }
-  };
+  }, [token]);
 
   // Carregar estados ao montar o componente
   useEffect(() => {
     fetchEstados();
-  }, []);
+  }, [fetchEstados]);
+
+  // Buscar cidades do estado selecionado ao editar
+  useEffect(() => {
+    if (igreja && igreja.id_uf) {
+      fetchCidades(igreja.id_uf);
+    }
+  }, [igreja, fetchCidades]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,28 +87,6 @@ const IgrejaForm = ({ igreja, onSave, onCancel }) => {
       } else {
         setCidades([]);
       }
-    }
-  };
-
-  // Função para buscar cidades baseado no estado
-  const fetchCidades = async (idUf) => {
-    setLoadingCidades(true);
-    try {
-      const SUPABASE_URL = process.env.REACT_APP_SUPABASE_API_BASE_URL;
-      const SUPABASE_API_KEY = process.env.REACT_APP_SUPABASE_API_KEY;
-      
-      const res = await api.get(`${SUPABASE_URL}/rest/v1/municipios?id_estado=eq.${idUf}&select=*`, {
-        headers: {
-          apikey: SUPABASE_API_KEY,
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setCidades(res.data);
-    } catch (error) {
-      console.error('Erro ao buscar cidades:', error);
-      setCidades([]);
-    } finally {
-      setLoadingCidades(false);
     }
   };
 

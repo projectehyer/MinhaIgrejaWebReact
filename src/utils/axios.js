@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-// Cria uma instância global do Axios
-const api = axios.create();
+// Cria uma instância global do Axios com timeout de 10 segundos
+const api = axios.create({
+  timeout: 10000, // 10 segundos
+});
 
 // Função para injetar o interceptor (precisa do contexto de autenticação)
 export function setupAxiosInterceptors({ refreshSession, logout, navigate }) {

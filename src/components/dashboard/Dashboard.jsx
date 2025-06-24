@@ -19,7 +19,9 @@ const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [conteudos, setConteudos] = useState([]);
+  const [loadingConteudos, setLoadingConteudos] = useState(true);
   const [igrejas, setIgrejas] = useState([]);
+  const [loadingIgrejas, setLoadingIgrejas] = useState(true);
   const carrosselRef = useRef(null);
   const [editingConteudo, setEditingConteudo] = useState(null);
   const [editingIgreja, setEditingIgreja] = useState(null);
@@ -44,6 +46,7 @@ const Dashboard = () => {
 
   // Função para buscar conteúdos
   const fetchConteudos = useCallback(async (filter = '') => {
+    setLoadingConteudos(true);
     try {
       let url = `${SUPABASE_URL}/rest/v1/conteudo?select=id,titulo,texto,imagem`;
       if (filter) {
@@ -62,11 +65,14 @@ const Dashboard = () => {
       setConteudos(res.data);
     } catch {
       setConteudos([]);
+    } finally {
+      setLoadingConteudos(false);
     }
   }, [token]);
 
   // Função para buscar igrejas
   const fetchIgrejas = useCallback(async (filter = '') => {
+    setLoadingIgrejas(true);
     try {
       let url = `${SUPABASE_URL}/rest/v1/igrejas?select=id,nome,logradouro,numero,complemento,bairro,id_cidade,id_uf`;
       if (filter) {
@@ -95,6 +101,8 @@ const Dashboard = () => {
       } else {
         setIgrejas([]);
       }
+    } finally {
+      setLoadingIgrejas(false);
     }
   }, [token]);
 
@@ -487,7 +495,9 @@ const Dashboard = () => {
               Adicionar Novo Conteúdo
             </button>
             <div className="conteudo-lista">
-              {conteudos.length > 0 ? (
+              {loadingConteudos ? (
+                <p>Carregando conteúdos...</p>
+              ) : conteudos.length > 0 ? (
                 conteudos.map((item) => (
                   <div key={item.id} className="conteudo-lista-item">
                     <div className="conteudo-lista-info">
@@ -543,7 +553,9 @@ const Dashboard = () => {
               Adicionar Nova Igreja
             </button>
             <div className="igreja-lista">
-              {igrejas.length > 0 ? (
+              {loadingIgrejas ? (
+                <p>Carregando igrejas...</p>
+              ) : igrejas.length > 0 ? (
                 igrejas.map((item) => (
                   <div key={item.id} className="igreja-lista-item">
                     <div className="igreja-lista-info">
