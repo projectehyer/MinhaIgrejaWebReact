@@ -171,14 +171,14 @@
 
   .filter-buttons {
     display: flex;
-    gap: 0.5rem;
+    gap: 1rem;
   }
 
   .filter-buttons .btn-filter,
   .filter-buttons .btn-clear-filter {
-    flex: 1;
-    padding: 10px 5px;
-    font-size: 0.9rem;
+    padding: 10px 20px;
+    font-size: 1rem;
+    flex: unset;
   }
 }
 
@@ -382,4 +382,9 @@
   .filter-input {
     max-width: none;
   }
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 0.5rem;
 }
